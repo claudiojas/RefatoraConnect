@@ -16,9 +16,10 @@ O projeto é construído como um monorepo utilizando as tecnologias mais moderna
 
 - **Monorepo:** [Turborepo](https://turbo.build/repo)
 - **Backend:** Node.js, Express, TypeScript, PostgreSQL, Prisma ORM
+- **Autenticação:** Sistema seguro baseado em Cookies HttpOnly
 - **Inteligência Artificial:** Google Gemini
 - **Frontend (Site Institucional):** Next.js, React, Tailwind CSS
-- **Frontend (Plataforma do Cliente):** Vite, React, TypeScript, Tailwind CSS
+- **Frontend (Plataforma do Cliente)::** Vite, React, TypeScript, TanStack Query, Tailwind CSS
 
 ## Estrutura do Projeto
 

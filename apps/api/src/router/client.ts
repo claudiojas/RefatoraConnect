@@ -131,4 +131,22 @@ clientRouter.delete("/:clientId/config/:agentType/:configId", async (req: Reques
   }
 });
 
+// POST /client/:clientId/complete-onboarding - Mark client onboarding as complete
+clientRouter.post("/:clientId/complete-onboarding", async (req: Request, res: Response) => {
+  const { clientId } = req.params;
+
+  try {
+    const updatedClient = await prisma.client.update({
+      where: { id: clientId },
+      data: { onboardingCompleted: true },
+    });
+    res.status(200).json(updatedClient);
+  } catch (error) {
+    console.error(`Error completing onboarding for client ${clientId}:`, error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
 export { clientRouter };

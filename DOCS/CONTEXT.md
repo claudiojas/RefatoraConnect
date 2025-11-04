@@ -1,4 +1,4 @@
-# CONTEXT.md: Estado Atual e Próximos Passos do Projeto
+# CONTEXT.MD: Estado Atual e Próximos Passos do Projeto
 
 *Este documento é um guia "vivo" para qualquer desenvolvedor ou LLM que precise entender o estado atual do projeto, sua arquitetura e como continuar o desenvolvimento.*
 
@@ -6,76 +6,83 @@
 
 O **RefatoraConnect** é uma plataforma SaaS (Software as a Service) multi-tenant projetada para permitir que empresas clientes automatizem o atendimento ao cliente via WhatsApp. O núcleo do serviço é um sistema de orquestração de agentes de IA (usando Google Gemini) que respondem a perguntas com base em informações específicas de cada empresa, configuradas na plataforma.
 
-## 2. Arquitetura do Monorepo
+## 2. Arquitetura
 
-O projeto foi recentemente migrado para uma arquitetura de monorepo gerenciada pelo **Turborepo** para facilitar o compartilhamento de código e a manutenibilidade.
+### 2.1. Monorepo com Turborepo
 
-- **`apps/`**: Contém as aplicações independentes.
-  - **`api`**: O backend em Node.js/Express. É o cérebro da aplicação, responsável pela autenticação, orquestração dos agentes, e comunicação com o banco de dados e a API do WhatsApp.
-  - **`web-institucional`**: Aplicação em Next.js destinada ao site de marketing, blog e páginas públicas. Otimizada para SEO.
-  - **`web-plataforma`**: Aplicação em Vite+React que funciona como o painel de controle para os clientes. É aqui que eles se cadastram, fazem login e configuram seus agentes.
+O projeto é estruturado como um monorepo gerenciado pelo **Turborepo**.
 
-- **`packages/`**: Contém pacotes de código compartilhado.
-  - Atualmente vazio, mas destinado a abrigar bibliotecas de componentes de UI, configurações de TypeScript (`@repo/tsconfig`), etc.
+- **`apps/`**: Contém as aplicações implantáveis.
+  - **`api`**: Backend em Node.js/Express. Responsável pela lógica de negócio, orquestração de agentes e comunicação com o banco de dados.
+  - **`web-institucional`**: Aplicação em Next.js para o site de marketing (atualmente boilerplate).
+  - **`web-plataforma`**: Aplicação em Vite+React que funciona como o painel de controle para os clientes.
+
+- **`packages/`**: Destinado a pacotes de código compartilhado (atualmente vazio).
+
+### 2.2. Autenticação (Cookie-Based)
+
+O sistema utiliza um fluxo de autenticação seguro baseado em cookies `HttpOnly`.
+
+1.  **Login/Registro**: O frontend envia as credenciais para a API.
+2.  **API**: Valida as credenciais, gera um token JWT e o define em um cookie `HttpOnly` na resposta.
+3.  **Requisições Subsequentes**: O navegador anexa automaticamente o cookie a todas as requisições para a API.
+4.  **Validação**: Um endpoint `GET /auth/me` permite que o frontend verifique a validade do cookie e obtenha os dados do usuário a qualquer momento.
 
 ## 3. Estado da Implementação (O que foi feito até aqui)
 
-1.  **Estrutura do Monorepo:** Toda a estrutura de pastas e arquivos de configuração (`turbo.json`, `package.json` com workspaces) foi criada e as dependências foram instaladas. O Turborepo está funcional e consegue executar tarefas nos 3 projetos (`api`, `web-institucional`, `web-plataforma`).
+1.  **Estrutura do Monorepo:** A estrutura com Turborepo está funcional, com os três projetos (`api`, `web-institucional`, `web-plataforma`) configurados como workspaces.
 
 2.  **Backend (`apps/api`):**
-    - A API está funcional e pronta.
-    - A lógica de **autenticação de usuários** e **criação de clientes (tenants)** está implementada.
-    - O **orquestrador de agentes** que classifica as perguntas e delega para o agente correto está funcional.
-    - A **integração multi-tenant com o WhatsApp** está implementada: o sistema consegue identificar o cliente pelo ID do número de telefone e usar o token de acesso específico daquele cliente para enviar respostas.
-    - O endpoint de callback (`/auth/whatsapp/callback`) para o fluxo de "Embedded Signup" da Meta está pronto para receber o código de autorização do frontend.
+    - Implementado o sistema de autenticação com cookies `HttpOnly`.
+    - Adicionados endpoints `GET /auth/me` e `POST /auth/logout`.
+    - Adicionado o campo `onboardingCompleted` ao modelo `Client` no banco de dados para rastrear o status do onboarding.
+    - Criado o endpoint `POST /client/:clientId/complete-onboarding` para atualizar esse status.
 
-3.  **Frontends (`apps/web-institucional` e `apps/web-plataforma`):**
-    - Os projetos foram criados com suas respectivas ferramentas (`create-next-app` e `create-vite`).
-    - Atualmente, ambos contêm apenas o código boilerplate inicial. **Nenhuma funcionalidade foi implementada ainda.**
+3.  **Frontend (`apps/web-plataforma`):**
+    - **Fluxo de Autenticação Completo:** As páginas de Login e Registro estão funcionais e integradas com a API via `TanStack Query`.
+    - **Fluxo de Onboarding Implementado:**
+        - Criada a página `/onboarding` com o formulário para configuração inicial dos agentes (História, Serviços, etc.).
+        - A submissão do formulário salva as configurações e marca o onboarding como concluído.
+    - **Rotas Protegidas:** Foi criado o componente `ProtectedRoute` que gerencia o acesso às páginas, redirecionando o usuário para `/login`, `/onboarding` ou `/dashboard` com base no seu status.
 
 ## 4. Como Continuar o Desenvolvimento
 
 ### Rodando o Ambiente
 
-1.  **Instalar dependências (se for a primeira vez ou se houver novas):**
+1.  **Variáveis de Ambiente:** Certifique-se de que o arquivo `apps/api/.env` está configurado corretamente. As variáveis mais importantes são:
+    - `DATABASE_URL`: URL de conexão com o banco de dados.
+    - `CORS_ORIGIN`: Deve ser a URL do frontend da plataforma (ex: `http://localhost:5173`).
+    - `PORT`: Porta para a API (ex: `3001`) para evitar conflito com o Next.js.
+
+2.  **Instalar dependências (se necessário):**
     ```bash
     npm install
     ```
-2.  **Iniciar o ambiente de desenvolvimento:**
-    Este comando subirá todas as aplicações (`api`, `web-institucional`, `web-plataforma`) simultaneamente.
+3.  **Iniciar o ambiente de desenvolvimento:**
+    Este comando sobe todas as aplicações simultaneamente. A API rodará na porta definida em `.env` (ex: 3001), o Next.js na 3000 e o Vite na 5173.
     ```bash
-    turbo run dev
+    npx turbo run dev
     ```
 
-### Próximos Passos Essenciais
+### Próximo Passo Essencial: Integração com WhatsApp
 
-O foco agora é construir a interface da **plataforma do cliente (`apps/web-plataforma`)**.
+O fluxo de cadastro e configuração inicial está pronto. O próximo grande passo é implementar a **conexão com o WhatsApp** dentro do Dashboard, conforme o plano original.
 
-**Tarefa Imediata: Implementar o fluxo de conexão com o WhatsApp.**
+**Tarefa: Implementar o "Embedded Signup" do WhatsApp no Dashboard (`apps/web-plataforma/src/pages/Dashboard.tsx`)**
 
-1.  **Criar Páginas de Autenticação:**
-    - Implementar as telas de Login e Cadastro na `web-plataforma`.
-    - Conectar essas telas aos endpoints `POST /auth/login` e `POST /auth/register` da `api`.
+1.  **Adicionar o SDK do Facebook:** Carregue o script do SDK do Facebook na sua aplicação React. Isso geralmente é feito no `index.html` ou dinamicamente em um `useEffect`.
 
-2.  **Criar o Painel do Cliente:**
-    - Após o login, o usuário deve ser direcionado para um painel de controle.
-    - Este painel deve exibir o status da conexão com o WhatsApp (Conectado/Não Conectado).
+2.  **Criar o Botão de Conexão:** No `Dashboard.tsx`, modifique o botão "Conectar WhatsApp" para que ele chame a função `FB.login()` do SDK da Meta.
 
-3.  **Implementar o "Embedded Signup" do WhatsApp:**
-    - No painel, adicione um botão "Conectar com o WhatsApp".
-    - **Adicione o SDK JavaScript do Facebook** ao projeto React.
-    - Ao clicar no botão, inicie o fluxo de login da Meta, conforme a [documentação oficial](https://developers.facebook.com/docs/whatsapp/embedded-signup/web/)
-    - Ao final do fluxo, a Meta irá redirecionar de volta para sua aplicação com um **código de autorização** de curta duração.
-    - Sua aplicação frontend deve pegar esse `code` e o `clientId` do usuário logado e enviá-los para o backend no endpoint: `POST /api/auth/whatsapp/callback`.
+3.  **Obter o Código de Autorização:** Configure a chamada `FB.login()` para pedir a permissão `whatsapp_business_management`. No sucesso, a resposta da Meta incluirá um `code` de autorização.
 
-4.  **Atualizar a UI:**
-    - Após a chamada bem-sucedida ao backend, a UI do painel deve ser atualizada para mostrar o status "Conectado".
+4.  **Enviar o Código para a API:** Crie uma nova `mutation` com `TanStack Query` no `Dashboard.tsx`. Essa `mutation` deve fazer uma chamada `POST` para o endpoint `POST /api/auth/whatsapp/callback`, enviando o `code` recebido e o `clientId` do usuário logado.
+
+5.  **Atualizar a UI:** No `onSuccess` da `mutation`, atualize a interface do Dashboard para refletir que a conta foi conectada com sucesso (ex: mudar o status para "Conectado" e talvez exibir o número de telefone).
 
 ## 5. Pontos de Melhoria (Dívida Técnica Notada na API)
 
-Durante a análise inicial da API, foram identificados alguns pontos que devem ser corrigidos futuramente:
-
-- **Modelo Gemini Inválido**: Em `apps/api/src/services/callGeminiAgent.ts`, o modelo está como `gemini-2.5-flash`, que é inválido. Deve ser corrigido para um modelo válido como `gemini-1.5-flash`.
-- **Agentes Faltando**: A `Category` em `apps/api/src/types/index.ts` inclui `projects` e `tech`, mas os agentes correspondentes não existem e não são tratados no `orchestrator`.
-- **Lógica de Cache**: A função `findSimilarQuestion` faz uma busca por correspondência exata, não por similaridade, o que limita sua eficácia.
-- **Dependências**: O `package.json` da API inclui a dependência `openai`, que não parece ser utilizada e pode ser removida.
+- **Modelo Gemini Inválido**: Em `apps/api/src/services/callGeminiAgent.ts`, o modelo está como `gemini-2.5-flash`. Deve ser corrigido para `gemini-1.5-flash`.
+- **Agentes Faltando**: A `Category` em `apps/api/src/types/index.ts` inclui `projects` e `tech`, mas os agentes não existem.
+- **Lógica de Cache**: A função `findSimilarQuestion` faz uma busca por correspondência exata, não por similaridade.
+- **Dependências**: O `package.json` da API inclui `openai`, que não parece ser utilizada.

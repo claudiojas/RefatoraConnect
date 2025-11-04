@@ -35,6 +35,9 @@ model Client {
   whatsappPhoneNumberId  String?
   whatsappBusinessId     String?
 
+  // Onboarding status
+  onboardingCompleted    Boolean  @default(false)
+
   // Relations to agent-specific configurations
   contactConfig    ContactConfig[]
   historyConfig    HistoryConfig[]
