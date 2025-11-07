@@ -83,6 +83,4 @@ O fluxo de cadastro e configuração inicial está pronto. O próximo grande pas
 ## 5. Pontos de Melhoria (Dívida Técnica Notada na API)
 
 - **Modelo Gemini Inválido**: Em `apps/api/src/services/callGeminiAgent.ts`, o modelo está como `gemini-2.5-flash`. Deve ser corrigido para `gemini-1.5-flash`.
-- **Agentes Faltando**: A `Category` em `apps/api/src/types/index.ts` inclui `projects` e `tech`, mas os agentes não existem.
-- **Lógica de Cache**: A função `findSimilarQuestion` faz uma busca por correspondência exata, não por similaridade.
 - **Dependências**: O `package.json` da API inclui `openai`, que não parece ser utilizada.

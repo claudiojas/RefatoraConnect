@@ -74,6 +74,4 @@ O backend para a integração com o WhatsApp está funcional e pronto. No entant
 Durante a análise, foram identificados alguns pontos que podem ser melhorados futuramente:
 
 - **Modelo Gemini Inválido**: Em `src/services/callGeminiAgent.ts`, o modelo está como `gemini-2.5-flash`, que é inválido. Deve ser corrigido para um modelo válido como `gemini-1.5-flash`.
-- **Agentes Faltando**: A `Category` em `src/types/index.ts` inclui `projects` e `tech`, mas os agentes correspondentes não existem e não são tratados no `orchestrator`.
-- **Lógica de Cache**: A função `findSimilarQuestion` faz uma busca por correspondência exata, não por similaridade, o que limita sua eficácia.
 - **Dependências**: O `package.json` inclui a dependência `openai`, que não parece ser utilizada.

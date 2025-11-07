@@ -10,7 +10,7 @@ const genAI = new GoogleGenAI({apiKey:GEMINI_API_KEY});
 export const callGeminiAgent = async ( systemPrompt: string, userPrompt: string, clientId: string ) => {
   checkEnvironmentVariable();
   try {
-    const model ="gemini-2.5-flash";
+    const model ="gemini-1.5-flash";
 
     const response = await genAI.models.generateContent({
       model:model,

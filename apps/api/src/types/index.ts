@@ -22,10 +22,8 @@ export interface ChatEntry {
 export type Category =
   | 'history'
   | 'services'
-  | 'projects'
   | 'memory'
   | 'smalltalk'
-  | 'tech'
   | 'pricing'
   | 'contacts'
   | 'other';
