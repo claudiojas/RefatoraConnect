@@ -49,8 +49,6 @@ clientRouter.post("/", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error creating client:", error);
     res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -78,10 +76,6 @@ clientRouter.post("/:clientId/config/:agentType", async (req: Request, res: Resp
     });
     res.status(201).json(newConfig);
   } catch (error) {
-    console.error(`Error adding ${agentType} config for client ${clientId}:`, error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -102,10 +96,6 @@ clientRouter.put("/:clientId/config/:agentType/:configId", async (req: Request, 
     });
     res.status(200).json(updatedConfig);
   } catch (error) {
-    console.error(`Error updating ${agentType} config ${configId} for client ${clientId}:`, error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -124,10 +114,6 @@ clientRouter.delete("/:clientId/config/:agentType/:configId", async (req: Reques
     });
     res.status(204).send(); // No content
   } catch (error) {
-    console.error(`Error deleting ${agentType} config ${configId} for client ${clientId}:`, error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -143,9 +129,6 @@ clientRouter.post("/:clientId/complete-onboarding", async (req: Request, res: Re
     res.status(200).json(updatedClient);
   } catch (error) {
     console.error(`Error completing onboarding for client ${clientId}:`, error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 

@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/axios';
 import { useEffect, useState } from 'react';
 
+// Define a interface para o objeto User
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  clientId: string;
+}
+
 // Adiciona a tipagem para o objeto FB do SDK do Facebook
 declare global {
   interface Window {
@@ -14,26 +23,40 @@ declare global {
 export function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isSdkLoaded, setIsSdkLoaded] = useState(false);
+  const [isSdkInitialized, setIsSdkInitialized] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'Conectado' | 'Não Conectado'>('Não Conectado');
 
-  const { data: user } = useQuery({ queryKey: ['user'] });
+  const { data: user } = useQuery<User | undefined>({ queryKey: ['user'] });
 
-  // Carrega o SDK do Facebook dinamicamente
+  // Query para buscar a configuração da Meta a partir do nosso backend
+  const { data: metaConfig, isLoading: isLoadingMetaConfig } = useQuery({
+    queryKey: ['metaConfig'],
+    queryFn: async () => {
+      const response = await api.get('/auth/meta-config');
+      return response.data;
+    },
+    enabled: !!user, // Só executa a query se o usuário estiver carregado
+  });
+
+  // Carrega e inicializa o SDK do Facebook dinamicamente
   useEffect(() => {
-    if (document.getElementById('facebook-jssdk')) {
-      setIsSdkLoaded(true);
+    if (!metaConfig?.appId) {
+      return; // Não faz nada se não tivermos o appId
+    }
+
+    if (document.getElementById('facebook-jssdk') && window.FB) {
+      setIsSdkInitialized(true);
       return;
     }
 
     window.fbAsyncInit = function () {
       window.FB.init({
-        appId: 'YOUR_META_APP_ID', // TODO: Substitua pelo seu App ID da Meta
+        appId: metaConfig.appId,
         cookie: true,
         xfbml: true,
         version: 'v19.0',
       });
-      setIsSdkLoaded(true);
+      setIsSdkInitialized(true);
     };
 
     const script = document.createElement('script');
@@ -43,13 +66,13 @@ export function Dashboard() {
     script.defer = true;
     document.body.appendChild(script);
 
-  }, []);
+  }, [metaConfig]); // Depende da configuração da Meta ser carregada
 
   const whatsappCallbackMutation = useMutation({
-    mutationFn: async (code: string) => {
+    mutationFn: async ({ code, clientId }: { code: string; clientId: string }) => {
       return api.post('/auth/whatsapp/callback', {
         code,
-        clientId: user.id,
+        clientId,
       });
     },
     onSuccess: () => {
@@ -63,22 +86,25 @@ export function Dashboard() {
   });
 
   const handleWhatsAppConnect = () => {
-    if (!isSdkLoaded || !window.FB) {
-      alert('O SDK do Facebook ainda não foi carregado. Tente novamente em alguns segundos.');
+    if (!isSdkInitialized || !window.FB || !metaConfig?.configId) {
+      alert('A configuração de conexão ainda não foi carregada. Tente novamente em alguns segundos.');
+      return;
+    }
+    if (!user?.id) {
+      alert('Dados do usuário não carregados. Por favor, tente fazer login novamente.');
       return;
     }
 
     window.FB.login(
       function (response: any) {
-        if (response.authResponse && response.authResponse.code) {
-          whatsappCallbackMutation.mutate(response.authResponse.code);
-        } else {
-          console.error('User cancelled login or did not fully authorize.');
+                  if (response.authResponse && response.authResponse.code) {
+                    whatsappCallbackMutation.mutate({ code: response.authResponse.code, clientId: user.id });
+                  } else {          console.error('User cancelled login or did not fully authorize.');
           alert('A autorização do WhatsApp foi cancelada ou falhou.');
         }
       },
       {
-        config_id: 'YOUR_CONFIG_ID', // TODO: Substitua pelo seu Config ID do fluxo de Embedded Signup
+        config_id: metaConfig.configId,
         response_type: 'code',
         override_default_response_type: true,
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
@@ -100,6 +126,8 @@ export function Dashboard() {
     logoutMutation.mutate();
   };
 
+  const isConnectButtonDisabled = !isSdkInitialized || whatsappCallbackMutation.isPending || isLoadingMetaConfig;
+
   return (
     <div className="w-full max-w-2xl p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
       <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white">Bem-vindo, {user?.name}!</h1>
@@ -114,11 +142,11 @@ export function Dashboard() {
           </span>
         </p>
         <button
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-400"
           onClick={handleWhatsAppConnect}
-          disabled={!isSdkLoaded || whatsappCallbackMutation.isPending}
+          disabled={isConnectButtonDisabled}
         >
-          {whatsappCallbackMutation.isPending ? 'Conectando...' : 'Conectar WhatsApp'}
+          {isLoadingMetaConfig ? 'Carregando configuração...' : (whatsappCallbackMutation.isPending ? 'Conectando...' : 'Conectar WhatsApp')}
         </button>
       </div>
 

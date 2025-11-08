@@ -3,16 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/axios';
 
-// Supondo que você obtenha o clientId após o login (ex: de um contexto ou localStorage)
-function getClientIdFromToken(): string | null {
-  const token = localStorage.getItem('token');
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.clientId;
-  } catch (e) {
-    return null;
-  }
+// Obtém o clientId salvo no localStorage após o login
+function getClientIdFromStorage(): string | null {
+  return localStorage.getItem('clientId');
 }
 
 export function Onboarding() {
@@ -23,7 +16,7 @@ export function Onboarding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const clientId = getClientIdFromToken();
+  const clientId = getClientIdFromStorage();
 
   const onboardingMutation = useMutation({
     mutationFn: async (configs: any) => {
@@ -47,6 +40,7 @@ export function Onboarding() {
       navigate('/dashboard');
     },
     onError: (error: any) => {
+      console.log("Error da chamada mutation", error)
       alert('Erro ao salvar configurações: ' + (error.response?.data?.error || 'Tente novamente.'));
     },
   });

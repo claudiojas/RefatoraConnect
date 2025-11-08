@@ -2,7 +2,16 @@ import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import axios from 'axios'; // Importação corrigida
+import axios, { AxiosError } from 'axios'; // Importação corrigida
+
+interface GranularScope {
+  scope: string;
+  target_ids: string[];
+}
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return (error as AxiosError).isAxiosError !== undefined;
+}
 
 const authRouter = Router();
 const prisma = new PrismaClient();
@@ -60,10 +69,6 @@ authRouter.post("/register", async (req: Request, res: Response) => {
 
     res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
-    console.error("Error during registration:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -110,10 +115,6 @@ authRouter.post("/login", async (req: Request, res: Response) => {
     res.status(200).json(userWithoutPassword);
 
   } catch (error) {
-    console.error("Error during login:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -139,9 +140,6 @@ authRouter.get("/me", async (req: Request, res: Response) => {
     const { password: _, ...userWithoutPassword } = user;
     res.status(200).json(userWithoutPassword);
   } catch (error) {
-    res.status(401).json({ error: "Invalid or expired token" });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -149,6 +147,18 @@ authRouter.get("/me", async (req: Request, res: Response) => {
 authRouter.post("/logout", (req: Request, res: Response) => {
   res.clearCookie('token');
   res.status(200).json({ message: "Logged out successfully." });
+});
+
+// GET /auth/meta-config - Get the Meta App configuration
+authRouter.get("/meta-config", (req: Request, res: Response) => {
+  const configId = process.env.CONFIG_ID;
+  const appId = process.env.META_APP_ID;
+
+  if (!configId || !appId) {
+    return res.status(500).json({ error: "Meta configuration not found on server." });
+  }
+
+  res.status(200).json({ configId, appId });
 });
 
 
@@ -194,7 +204,7 @@ authRouter.post("/whatsapp/callback", async (req: Request, res: Response) => {
       }
     });
 
-    const businessId = debugTokenResponse.data.data.granular_scopes.find(scope => scope.scope === 'whatsapp_business_management').target_ids[0];
+    const businessId = debugTokenResponse.data.data.granular_scopes.find((scope: GranularScope) => scope.scope === 'whatsapp_business_management').target_ids[0];
 
     if (!businessId) {
       return res.status(400).json({ error: "WhatsApp Business Account not found or permissions not granted." });
@@ -224,8 +234,14 @@ authRouter.post("/whatsapp/callback", async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "WhatsApp connected successfully." });
 
-  } catch (error) {
-    console.error("Error during WhatsApp callback:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    if (isAxiosError(error)) {
+      console.error("Error during WhatsApp callback:", error.response?.data || error.message);
+    } else if (error instanceof Error) {
+      console.error("Error during WhatsApp callback:", error.message);
+    } else {
+      console.error("Error during WhatsApp callback:", "An unknown error occurred.");
+    }
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     await prisma.$disconnect();

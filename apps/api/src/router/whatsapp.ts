@@ -2,7 +2,11 @@ import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { orchestrator } from "../orchestrator/orchestrator";
 import { formatResponse } from "../services/formatResponse";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return (error as AxiosError).isAxiosError !== undefined;
+}
 
 const whatsappRouter = Router();
 const prisma = new PrismaClient();
@@ -64,8 +68,14 @@ whatsappRouter.post("/whatsapp", async (req: Request, res: Response) => {
     await sendWhatsAppMessage(from, formattedResponse, client.whatsappAccessToken, phoneNumberId);
 
     res.sendStatus(200);
-  } catch (error) {
-    console.error("Error processing WhatsApp message:", error);
+  } catch (error: unknown) {
+    if (isAxiosError(error)) {
+      console.error("Error processing WhatsApp message:", error.response?.data || error.message);
+    } else if (error instanceof Error) {
+      console.error("Error processing WhatsApp message:", error.message);
+    } else {
+      console.error("Error processing WhatsApp message:", "An unknown error occurred.");
+    }
     res.sendStatus(200); // Always return 200 to Meta
   }
 });
@@ -89,8 +99,14 @@ async function sendWhatsAppMessage(to: string, message: string, accessToken: str
       }
     );
     console.log(`Message sent to ${to}`);
-  } catch (error) {
-    console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    if (isAxiosError(error)) {
+      console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+    } else if (error instanceof Error) {
+      console.error("Error sending WhatsApp message:", error.message);
+    } else {
+      console.error("Error sending WhatsApp message:", "An unknown error occurred.");
+    }
   }
 }
 

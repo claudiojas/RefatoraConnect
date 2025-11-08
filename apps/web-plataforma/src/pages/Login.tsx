@@ -15,6 +15,9 @@ export function Login() {
       return data;
     },
     onSuccess: (data) => {
+      // Salva o clientId no localStorage para ser usado em outras partes da aplicação
+      localStorage.setItem('clientId', data.clientId);
+
       // Coloca os dados do usuário no cache do React Query
       queryClient.setQueryData(['user'], data);
       

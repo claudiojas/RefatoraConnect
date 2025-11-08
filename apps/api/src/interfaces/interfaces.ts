@@ -1,4 +1,4 @@
-import { Classification } from "../generated/prisma";
+import { Classification } from "@prisma/client";
 
 export interface ISaveToDatabase {
     question: string, 
