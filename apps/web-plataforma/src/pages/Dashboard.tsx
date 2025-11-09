@@ -26,7 +26,20 @@ export function Dashboard() {
   const [isSdkInitialized, setIsSdkInitialized] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'Conectado' | 'Não Conectado'>('Não Conectado');
 
-  const { data: user } = useQuery<User | undefined>({ queryKey: ['user'] });
+  const { data: user } = useQuery<User | undefined>({
+    queryKey: ['user'],
+    queryFn: async () => {
+      try {
+        const response = await api.get('/auth/me');
+        return response.data;
+      } catch (error) {
+        // Se o /auth/me falhar (ex: token inválido), redireciona para o login
+        navigate('/login');
+        return undefined;
+      }
+    },
+    retry: false, // Não tenta novamente se falhar
+  });
 
   // Query para buscar a configuração da Meta a partir do nosso backend
   const { data: metaConfig, isLoading: isLoadingMetaConfig } = useQuery({
