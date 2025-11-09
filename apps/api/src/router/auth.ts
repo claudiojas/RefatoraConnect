@@ -58,6 +58,11 @@ authRouter.post("/register", async (req: Request, res: Response) => {
       { expiresIn: "1h" }
     );
 
+    // Em desenvolvimento local (HTTP), pode ser necessário usar: secure: false, sameSite: 'lax'
+    // Em produção (HTTPS), o ideal é: secure: true, sameSite: 'strict'
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
       maxAge: 3600000, // 1 hour
     });
