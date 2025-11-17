@@ -13,7 +13,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "turbo": "latest",
+    "turbo": "^2.6.1",
     "typescript": "^5.4.5"
   },
   "packageManager": "npm@10.2.0"

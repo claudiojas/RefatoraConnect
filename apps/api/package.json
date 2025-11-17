@@ -7,7 +7,6 @@
     "dev": "tsx watch --env-file .env src/server.ts",
     "prisma:generate": "prisma generate",
     "build": "npm run prisma:generate && tsc",
-
     "start": "node dist/server.js"
   },
   "keywords": [],
@@ -16,7 +15,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.2",
