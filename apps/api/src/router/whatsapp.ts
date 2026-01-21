@@ -27,6 +27,88 @@ whatsappRouter.get("/whatsapp", (req: Request, res: Response) => {
 });
 
 // POST /webhook/whatsapp - Handle incoming messages
+/**
+ * @openapi
+ * /webhook/whatsapp:
+ *   post:
+ *     summary: Recebe e processa mensagens e eventos do WhatsApp.
+ *     description: >
+ *       Este endpoint recebe os webhooks enviados pela Meta contendo mensagens
+ *       e outros eventos do WhatsApp. Ele identifica o cliente com base no
+ *       ID do número de telefone e orquestra a resposta via IA.
+ *       Sempre retorna status 200 para a Meta para evitar desativação do webhook.
+ *     tags: [Webhook]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               object:
+ *                 type: string
+ *                 description: Sempre 'whatsapp_business_account' para este webhook.
+ *                 example: whatsapp_business_account
+ *               entry:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: ID da conta comercial do WhatsApp.
+ *                     changes:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value:
+ *                             type: object
+ *                             properties:
+ *                               messaging_product:
+ *                                 type: string
+ *                                 example: whatsapp
+ *                               metadata:
+ *                                 type: object
+ *                                 properties:
+ *                                   display_phone_number:
+ *                                     type: string
+ *                                     example: "16505551111"
+ *                                   phone_number_id:
+ *                                     type: string
+ *                                     example: "123456789012345"
+ *                               messages:
+ *                                 type: array
+ *                                 items:
+ *                                   type: object
+ *                                   properties:
+ *                                     from:
+ *                                       type: string
+ *                                       example: "5511999998888"
+ *                                     id:
+ *                                       type: string
+ *                                       example: "wamid.HBgLMTY1MDY..."
+ *                                     timestamp:
+ *                                       type: string
+ *                                       example: "1678888888"
+ *                                     text:
+ *                                       type: object
+ *                                       properties:
+ *                                         body:
+ *                                           type: string
+ *                                           example: "Olá, tudo bem?"
+ *                                     type:
+ *                                       type: string
+ *                                       example: "text"
+ *                           field:
+ *                             type: string
+ *                             example: messages
+ *     responses:
+ *       '200':
+ *         description: Resposta enviada com sucesso ou webhook recebido. (Sempre retorna 200 para Meta).
+ *       '404':
+ *         description: Objeto do webhook não é 'whatsapp_business_account'.
+ */
 whatsappRouter.post("/whatsapp", async (req: Request, res: Response) => {
   const body = req.body;
 
