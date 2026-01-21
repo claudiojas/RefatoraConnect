@@ -1,9 +1,8 @@
+import { prisma } from '../DB/prisma.config';
 import { MethodsRepository } from '../repository/methods.repository';
 import { callGeminiAgent } from '../services/callGeminiAgent';
 import { erroAgente } from '../services/erroAgent';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 const repo = new MethodsRepository();
 
 export async function contactAgent(task: string, chat: string, clientId: string ): Promise<{ message: string; }> {

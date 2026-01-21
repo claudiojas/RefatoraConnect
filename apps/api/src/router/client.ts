@@ -1,8 +1,7 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../DB/prisma.config";
 
 const clientRouter = Router();
-const prisma = new PrismaClient();
 
 // Helper function to get the correct config model based on agentType
 const getConfigModel = (agentType: string) => {

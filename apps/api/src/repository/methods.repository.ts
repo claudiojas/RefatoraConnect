@@ -1,6 +1,6 @@
 import { IFindSimilarQuestion, IMethodsRepository, ISaveToDatabase } from "../interfaces/interfaces";
 import { prisma } from "../DB/prisma.config";
-import { Classification } from "@prisma/client";
+import type { Classification } from "../generated/prisma/client";
 
 
 const levenshtein = (a: string, b: string): number => {

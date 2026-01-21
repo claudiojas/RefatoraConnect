@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: Mini Assistant API
+  version: 1.0.0
+  description: |
+    Documentação da API para a plataforma Mini Assistant.
+    Esta API gerencia clientes (tenants), configurações de agentes de IA e a integração com o WhatsApp.
+contact:
+  name: Claudio Soares
+  email: claudio@email.com
+servers:
+  - url: http://localhost:3000
+    description: Servidor de Desenvolvimento
+tags:
+  - name: Auth
+    description: "Endpoints de Autenticação e Onboarding"
+  - name: Client
+    description: "Gerenciamento de Clientes (Tenants) e suas configurações"
+  - name: Assistant
+    description: "Interação com o assistente de IA"
+  - name: Webhook
+    description: "Webhooks para serviços de terceiros (ex: WhatsApp)"

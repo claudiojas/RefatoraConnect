@@ -1,0 +1,79 @@
+components:
+  schemas:
+    # Schemas de Autenticação
+    LoginPayload:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "usuario@empresa.com"
+        password:
+          type: string
+          example: "senha123"
+
+    RegisterPayload:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - companyName
+      properties:
+        name:
+          type: string
+          example: "Nome do Usuário"
+        email:
+          type: string
+          format: email
+          example: "usuario@empresa.com"
+        password:
+          type: string
+          example: "senha123"
+        companyName:
+          type: string
+          example: "Nome da Empresa"
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          $ref: '#/components/schemas/User'
+
+    # Schema do Usuário
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+        clientId:
+          type: string
+          format: uuid
+
+    # Schemas de Erro
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Mensagem de erro detalhada."
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,15 +1,14 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { orchestrator } from "../orchestrator/orchestrator";
 import { formatResponse } from "../services/formatResponse";
 import axios, { AxiosError } from "axios";
+import { prisma } from "../DB/prisma.config";
 
 function isAxiosError(error: unknown): error is AxiosError {
   return (error as AxiosError).isAxiosError !== undefined;
 }
 
 const whatsappRouter = Router();
-const prisma = new PrismaClient();
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 

@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 import { postRouter } from './router/POST';
 import { clientRouter } from "./router/client";
 import { authRouter } from "./router/auth";
@@ -21,5 +23,8 @@ app.use(postRouter);
 app.use("/client", clientRouter);
 app.use("/auth", authRouter);
 app.use("/webhook", whatsappRouter);
+
+// Rota da Documentação da API
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;
