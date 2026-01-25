@@ -28,6 +28,9 @@ const getConfigModel = (agentType: string) => {
  * /client/{clientId}/config/{agentType}:
  *   post:
  *     summary: Adiciona a configuração para um tipo de agente
+ *     description: |
+ *       Cria uma nova configuração para um agente específico (`contact`, `history`, etc.) associado a um cliente.
+ *       O corpo da requisição varia dependendo do `agentType` selecionado na URL.
  *     tags: [Client]
  *     security:
  *       - BearerAuth: []
@@ -58,9 +61,22 @@ const getConfigModel = (agentType: string) => {
  *               - $ref: '#/components/schemas/PricingConfig'
  *               - $ref: '#/components/schemas/ServicesConfig'
  *               - $ref: '#/components/schemas/SmalltalkConfig'
- *           example:
- *             agentDescription: "Descrição do agente de contato"
- *             contactSuggestion: "Sugestão de contato"
+ *           examples:
+ *             contact:
+ *               summary: Exemplo para o agente de Contato
+ *               value:
+ *                 agentDescription: "Direcionar o usuário para os canais de contato."
+ *                 contactSuggestion: "Para falar com um especialista, por favor, acesse nossa página de contato em www.exemplo.com/contato."
+ *             history:
+ *               summary: Exemplo para o agente de Histórico
+ *               value:
+ *                 agentDescription: "Responder perguntas sobre a história da empresa."
+ *                 companyHistory: "A nossa empresa foi fundada em 2010 com a missão de revolucionar o mercado X. Desde então, crescemos e nos tornamos líderes no setor."
+ *             services:
+ *               summary: Exemplo para o agente de Serviços
+ *               value:
+ *                 agentDescription: "Descrever os serviços que a empresa oferece."
+ *                 servicesOffered: "Oferecemos três serviços principais: Consultoria Estratégica, Desenvolvimento de Software e Análise de Dados."
  *     responses:
  *       '201':
  *         description: Configuração do agente criada com sucesso.

@@ -14,10 +14,7 @@ const schemas = YAML.load(fs.readFileSync(schemasPath, 'utf8'));
 const options: swaggerJSDoc.Options = {
   definition: {
     ...mainDocs,
-    components: {
-      ...mainDocs.components,
-      ...mainDocs.components,
-    },
+    ...(schemas as object), // Mescla os componentes (schemas, securitySchemes) do arquivo YAML
   },
   apis: ['./src/router/**/*.ts'], // Caminho para os arquivos que contêm as anotações JSDoc
 };
