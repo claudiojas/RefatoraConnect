@@ -1,20 +1,39 @@
 {
-  "name": "refatoraconnect-monorepo",
+  "name": "whatsbootia",
   "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/claudiojas/RefatoraConnect.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/claudiojas/RefatoraConnect/issues"
+  },
+  "homepage": "https://github.com/claudiojas/RefatoraConnect#readme",
   "devDependencies": {
-    "turbo": "^2.6.1",
-    "typescript": "^5.4.5"
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   },
-  "packageManager": "npm@10.2.0"
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^10.0.0",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "fastify": "^5.8.5",
+    "pg": "^8.20.0"
+  }
 }
